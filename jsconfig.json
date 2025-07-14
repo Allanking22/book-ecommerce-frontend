@@ -1,0 +1,20 @@
+// jsconfig.json
+{
+  "compilerOptions": {
+    "baseUrl": ".", // This is important for absolute imports
+    "paths": {
+      // If you were using a 'src' directory, you might have "@/components": ["src/components"]
+      // Since you chose NO to src/, we won't use custom aliases for now,
+      // but this 'paths' object is where they would go.
+    },
+    "jsx": "preserve" // Tells TypeScript/JavaScript compiler to keep JSX syntax
+  },
+  "include": [
+    "next-env.d.ts", // Next.js environment type definitions
+    "**/*.js",       // Include all JavaScript files
+    "**/*.jsx"      // Include all JSX (React) files
+  ],
+  "exclude": [
+    "node_modules"   // Exclude node_modules to speed up processing
+  ]
+}
