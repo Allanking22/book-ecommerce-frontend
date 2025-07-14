@@ -1,13 +1,16 @@
 // book-ecommerce-frontend/app/auth/reset-password/page.js
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react'; // <--- ADD Suspense import
 import { useRouter, useSearchParams } from 'next/navigation';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 import { FaLock, FaEye, FaEyeSlash } from 'react-icons/fa';
+import Link from 'next/link'; // Make sure Link is imported if used for "Login Here"
 
-export default function ResetPasswordPage() {
+
+// --- Step 1: Create a separate component that uses useSearchParams ---
+function ResetPasswordFormContent() {
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [loading, setLoading] = useState(false);
@@ -16,7 +19,7 @@ export default function ResetPasswordPage() {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
     const router = useRouter();
-    const searchParams = useSearchParams();
+    const searchParams = useSearchParams(); // <-- useSearchParams is now inside this component
 
     // Get the token from the URL query parameters when the component mounts
     useEffect(() => {
@@ -28,7 +31,7 @@ export default function ResetPasswordPage() {
             toast.error('No reset token found in the URL. Please use the link from your email.');
             router.push('/auth/forgot-password'); // Redirect back to forgot password page
         }
-    }, [searchParams, router]);
+    }, [searchParams, router]); // Added router to dependencies
 
     // Function to toggle password visibility
     const togglePasswordVisibility = () => {
@@ -95,9 +98,90 @@ export default function ResetPasswordPage() {
     };
 
     return (
+        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+            {/* New Password Input with Eye Icon */}
+            <div className="relative">
+                <label htmlFor="new-password" className="sr-only">
+                    New Password
+                </label>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="h-5 w-5 text-red-500" />
+                </div>
+                <input
+                    id="new-password"
+                    name="new-password"
+                    type={showPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-lg transition duration-200"
+                    placeholder="New Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                />
+                <button
+                    type="button"
+                    onClick={togglePasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                    {showPassword ? (
+                        <FaEyeSlash className="h-5 w-5" />
+                    ) : (
+                        <FaEye className="h-5 w-5" />
+                    )}
+                </button>
+            </div>
+
+            {/* Confirm New Password Input with Eye Icon */}
+            <div className="relative">
+                <label htmlFor="confirm-new-password" className="sr-only">
+                    Confirm New Password
+                </label>
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaLock className="h-5 w-5 text-red-500" />
+                </div>
+                <input
+                    id="confirm-new-password"
+                    name="confirm-new-password"
+                    type={showConfirmPassword ? 'text' : 'password'}
+                    autoComplete="new-password"
+                    required
+                    className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-lg transition duration-200"
+                    placeholder="Confirm New Password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                <button
+                    type="button"
+                    onClick={toggleConfirmPasswordVisibility}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
+                >
+                    {showConfirmPassword ? (
+                        <FaEyeSlash className="h-5 w-5" />
+                    ) : (
+                        <FaEye className="h-5 w-5" />
+                    )}
+                </button>
+            </div>
+
+            <div>
+                <button
+                    type="submit"
+                    className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
+                    disabled={loading}
+                >
+                    {loading ? 'Resetting...' : 'Reset Password'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+// --- Step 2: Wrap the component using useSearchParams with Suspense ---
+export default function ResetPasswordPage() {
+    return (
         <div className="min-h-screen flex items-center justify-center
-                         bg-[url('https://cdn.pixabay.com/photo/2023/09/27/21/26/anime-8280339_1280.jpg')] bg-cover bg-center bg-no-repeat bg-fixed
-                         relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
+                        bg-[url('https://cdn.pixabay.com/photo/2023/09/27/21/26/anime-8280339_1280.jpg')] bg-cover bg-center bg-no-repeat bg-fixed
+                        relative overflow-hidden py-12 px-4 sm:px-6 lg:px-8">
 
             <div className="absolute inset-0 bg-black opacity-40"></div>
 
@@ -110,81 +194,16 @@ export default function ResetPasswordPage() {
                         Enter your new password below.
                     </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                    {/* New Password Input with Eye Icon */}
-                    <div className="relative">
-                        <label htmlFor="new-password" className="sr-only">
-                            New Password
-                        </label>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaLock className="h-5 w-5 text-red-500" />
-                        </div>
-                        <input
-                            id="new-password"
-                            name="new-password"
-                            type={showPassword ? 'text' : 'password'}
-                            autoComplete="new-password"
-                            required
-                            className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-lg transition duration-200"
-                            placeholder="New Password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            onClick={togglePasswordVisibility}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
-                        >
-                            {showPassword ? (
-                                <FaEyeSlash className="h-5 w-5" />
-                            ) : (
-                                <FaEye className="h-5 w-5" />
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Confirm New Password Input with Eye Icon */}
-                    <div className="relative">
-                        <label htmlFor="confirm-new-password" className="sr-only">
-                            Confirm New Password
-                        </label>
-                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <FaLock className="h-5 w-5 text-red-500" />
-                        </div>
-                        <input
-                            id="confirm-new-password"
-                            name="confirm-new-password"
-                            type={showConfirmPassword ? 'text' : 'password'}
-                            autoComplete="new-password"
-                            required
-                            className="appearance-none relative block w-full pl-10 pr-10 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-md focus:outline-none focus:ring-purple-500 focus:border-purple-500 focus:z-10 sm:text-lg transition duration-200"
-                            placeholder="Confirm New Password"
-                            value={confirmPassword}
-                            onChange={(e) => setConfirmPassword(e.target.value)}
-                        />
-                        <button
-                            type="button"
-                            onClick={toggleConfirmPasswordVisibility}
-                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700 focus:outline-none"
-                        >
-                            {showConfirmPassword ? (
-                                <FaEyeSlash className="h-5 w-5" />
-                            ) : (
-                                <FaEye className="h-5 w-5" />
-                            )}
-                        </button>
-                    </div>
-
-                    <div>
-                        <button
-                            type="submit"
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-md text-white bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-300 transform hover:scale-105 shadow-lg"
-                            disabled={loading}
-                        >
-                            {loading ? 'Resetting...' : 'Reset Password'}
-                        </button>
-                    </div>
-                </form>
+                {/* This is the key change: wrapping the form content in Suspense */}
+                <Suspense fallback={<div>Loading password reset form...</div>}>
+                    <ResetPasswordFormContent />
+                </Suspense>
+                <div className="text-center text-gray-600 mt-4">
+                    Remembered your password?{' '}
+                    <Link href="/auth/login" className="font-medium text-purple-600 hover:text-pink-500">
+                        Login Here
+                    </Link>
+                </div>
             </div>
         </div>
     );
