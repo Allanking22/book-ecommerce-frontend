@@ -45,7 +45,7 @@ export default function RegisterPage() {
                 throw new Error('Backend URL is not defined in environment variables.');
             }
 
-            const res = await axios.post(`${backendUrl}/users/register`, {
+            const res = await axios.post(`${backendUrl}/api/users/register`, {
                 name,
                 email,
                 password,

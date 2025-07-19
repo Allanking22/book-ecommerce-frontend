@@ -33,7 +33,7 @@ export default function LoginPage() {
             }
 
             // Make the API call to your backend
-            const res = await axios.post(`${backendUrl}/users/login`, {
+            const res = await axios.post(`${backendUrl}/api/users/login`, {
                 email,
                 password,
             });
